@@ -13,6 +13,8 @@
 -- Documentation: https://docs.microsoft.com/en-us/sql/t-sql/functions/datetrunc-transact-sql?view=sql-server-ver16
 -- ************************************************************************ --
 
+USE AdventureWorks2019;
+GO
 
 -- Example 1: Workarounds for date truncation prior to DATETRUNC
 -- These only go so far ... try determining the beginning of the quarter, for example
@@ -20,7 +22,7 @@ SELECT
 	GETDATE() AS [CurrentDateTime]
 	, CONVERT(DATETIME, CONVERT(VARCHAR(20), GETDATE(), 110)) AS [CurrentDay]
 	, CONVERT(DATETIME, FORMAT(GETDATE(), 'yyyy-MM-dd HH:00')) AS [CurrentHour]
-
+GO
 
 -- Example 2: Truncate current date/time to different dateparts with DATETRUNC
 
@@ -51,7 +53,7 @@ UNION ALL
 SELECT 'MILLISECOND', DATETRUNC(MILLISECOND, @d)
 UNION ALL
 SELECT 'MICROSECOND', DATETRUNC(MICROSECOND, @d);
-
+GO
 
 
 
@@ -60,14 +62,14 @@ SELECT 'MICROSECOND', DATETRUNC(MICROSECOND, @d);
 
 EXECUTE sp_describe_first_result_set @tsql=N'SELECT DATETRUNC(YEAR, SYSUTCDATETIME())';
 EXECUTE sp_describe_first_result_set @tsql=N'SELECT DATETRUNC(YEAR, GETDATE())';
-
+GO
 
 
 -- Example 4: Error thrown when attempting to convert to a datepart not supported by input date
 
 DECLARE @d time = '12:12:12.1234567';
 SELECT DATETRUNC(year, @d);
-
+GO
 
 
 -- Example 5: DATETRUNC is not SARGable
@@ -75,6 +77,13 @@ CREATE NONCLUSTERED INDEX IX_SalesOrderHeader_OrderDate ON Sales.SalesOrderHeade
 	OrderDate
 );
 
+-- SARGable
 SELECT SalesOrderID, OrderDate, DATETRUNC(MONTH, OrderDate)
 FROM Sales.SalesOrderHeader
-WHERE DATETRUNC(MONTH, OrderDate) = '2011-06-01 00:00:00.000'
+WHERE OrderDate BETWEEN '2011-06-01' AND '2011-07-01'
+
+-- Not SARGable
+SELECT SalesOrderID, OrderDate, DATETRUNC(MONTH, OrderDate)
+FROM Sales.SalesOrderHeader
+WHERE DATETRUNC(MONTH, OrderDate) = '2011-06-01'
+GO

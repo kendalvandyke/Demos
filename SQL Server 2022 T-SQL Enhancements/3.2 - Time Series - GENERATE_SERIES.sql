@@ -47,7 +47,7 @@ FROM GENERATE_SERIES(1, 10, -5);
 
 -- Example 4: Data types must match! This results in an error
 DECLARE @start INT = 1;
-DECLARE @stop INT = 1;
+DECLARE @stop INT = 10;
 DECLARE @step decimal(2,1) = 0.5;
 
 SELECT value

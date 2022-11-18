@@ -34,7 +34,7 @@ SELECT JSON_ARRAY('red', 'orange', @ArrayVal, 'green', 'blue', 'indigo', 'violet
 
 
 
--- Example 3: Handling NULL values in JSON_OBJECT
+-- Example 3: Handling NULL values in JSON_OBJECT and JSON_ARRAY
 -- NULL ON NULL:  converts the SQL NULL value into a JSON null value when generating the JSON key value
 -- ABSENT ON NULL: omit the entire key if the value is NULL
 

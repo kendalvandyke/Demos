@@ -44,11 +44,19 @@ SELECT 'Seconds', DATE_BUCKET (SECOND, 1, @date), DATETRUNC (SECOND, @date);
 -- so watch out when using DATE_BUCKET to find the beginning of the week
 
 DECLARE @known_origin DATETIME  = '1900-01-07 00:00:00';
+DECLARE @default_origin DATETIME = '1900-01-01 00:00:00';
 
-SELECT  @known_origin AS [KnownOrigin]
-	   , DATENAME (WEEKDAY, @known_origin) AS [KnownOriginDay]
-	   , DATE_BUCKET (WEEK, 1, GETDATE (), @known_origin) AS [DateBucketKnownOrigin]
-	   , DATENAME (WEEKDAY, DATE_BUCKET (WEEK, 1, GETDATE (), @known_origin)) AS [DateBucketKnownOriginDay];
+SELECT 'Known Origin' AS [Origin Type]
+	   , @known_origin AS [Origin]
+	   , DATENAME (WEEKDAY, @known_origin) AS [OriginDay]
+	   , DATE_BUCKET (WEEK, 1, GETDATE (), @known_origin) AS [DateBucketOrigin]
+	   , DATENAME (WEEKDAY, DATE_BUCKET (WEEK, 1, GETDATE (), @known_origin)) AS [DateBucketOriginDay]
+UNION ALL
+SELECT 'Default Origin' AS [Origin Type]
+	   , @default_origin AS [Origin]
+	   , DATENAME (WEEKDAY, @default_origin) AS [OriginDay]
+	   , DATE_BUCKET (WEEK, 1, GETDATE ()) AS [DateBucketOrigin]
+	   , DATENAME (WEEKDAY, DATE_BUCKET (WEEK, 1, GETDATE ())) AS [DateBucketOriginDay];
 
 
 -- Example 3: Using DATE_BUCKET for arbitrary bucket sizes

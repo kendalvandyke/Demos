@@ -20,7 +20,7 @@
 USE AdventureWorks2019; 
 GO 
 
--- Example 1: Return max/min value from a list of constraints
+-- Example 1: Return greatest/least value from a list of constants
 -- The scale of the return type is determined by the scale of the argument with the highest precedence data type.
 -- NULL values are ignored
 
@@ -35,7 +35,7 @@ GO
 
 
 
--- Example 2: Return max/min value from a list of character types
+-- Example 2: Return greatest/least value from a list of character types
 -- The following example returns the maximum value from the list of character constants that is provided.
 
 SELECT GREATEST('Glacier', N'Joshua Tree', 'Mount Rainier') AS GreatestString
@@ -54,7 +54,7 @@ GO
 
 
 
--- Example 4: Return max/min value from a list of column arguments
+-- Example 4: Return greatest/least value from a list of column arguments
 
 SELECT sp.SalesQuota, sp.SalesYTD, sp.SalesLastYear 
       , GREATEST(sp.SalesQuota, sp.SalesYTD, sp.SalesLastYear) AS SalesGreatest

@@ -34,50 +34,33 @@ GO
 DBCC DROPCLEANBUFFERS
 GO
 SET STATISTICS TIME,IO ON
+GO
 
--- Let's start with looking at the 95th percentile for order total price by employee using PERCENTILE_*
--- CONT and DISC will be the same in this example because there are no NULL values in the data
+-- Start with returning the 95th percentile for order total (including tax) by employee using PERCENTILE_CONT
 SELECT DISTINCT de.Employee
-	, PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY foh.Quantity) OVER (PARTITION BY de.Employee) AS [Quantity 95 percentile CONT] 
-	--, PERCENTILE_DISC(0.95) WITHIN GROUP (ORDER BY foh.Quantity) OVER (PARTITION BY de.Employee)AS [Quantity 95 percentile DISC]
+	, PERCENTILE_CONT(0.95) 
+		WITHIN GROUP (ORDER BY foh.[Total Including Tax]) 
+		OVER (PARTITION BY de.Employee) AS [95 percentile CONT] 
 FROM Fact.OrderHistory AS foh
 	INNER JOIN Dimension.Employee AS de ON foh.[Salesperson Key] = de.[Employee Key]
-ORDER BY de.Employee
+ORDER BY de.Employee;
+GO
+SET STATISTICS TIME,IO OFF
+GO
 
+-- Now achieve (almost) the same result with APPROX_PERCENTILE_CONT
+DBCC DROPCLEANBUFFERS
+GO
+SET STATISTICS TIME,IO ON
+GO
 
-
-/*
-Table 'Employee'. Scan count 1, logical reads 5, physical reads 1, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'OrderHistory'. Scan count 9, logical reads 94423, physical reads 0, page server reads 0, read-ahead reads 94353, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Workfile'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Worktable'. Scan count 44, logical reads 21093555, physical reads 0, page server reads 0, read-ahead reads 16787, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Worktable'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-
- SQL Server Execution Times:
-   CPU time = 65283 ms,  elapsed time = 29976 ms.
-*/
-
-
--- Now let's look at how to achieve the same thing with APPROX_PERCENTILE_*
--- APPROX_PERCENTILE_* are aggregate functions (whereas PERCENTILE_* are analytic)
--- The function 'APPROX_PERCENTILE_CONT' is not a valid windowing function, and cannot be used with the OVER clause.
--- Also, unlike PERCENTILE_*, APPROX_PERCENTILE_* can be used with a GROUP BY clause
--- Finally, results may change between executions even if the data does not due to the algorithm used to calculate APPROX_PERCENTILE_*
 SELECT de.Employee
-	, APPROX_PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY foh.Quantity)   
-	--, APPROX_PERCENTILE_DISC(0.95) WITHIN GROUP (ORDER BY foh.Quantity)   
+	, APPROX_PERCENTILE_CONT(0.95) 
+	WITHIN GROUP (ORDER BY foh.[Total Including Tax]) AS [95 percentile APPROX_CONT]  
 FROM Fact.OrderHistory AS foh
 	INNER JOIN Dimension.Employee AS de ON foh.[Salesperson Key] = de.[Employee Key]
 GROUP BY de.Employee
-ORDER BY de.Employee
-
-/*
-Table 'OrderHistory'. Scan count 9, logical reads 94423, physical reads 0, page server reads 0, read-ahead reads 94353, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Employee'. Scan count 0, logical reads 202, physical reads 1, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Worktable'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 101, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Workfile'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-Table 'Worktable'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
-
- SQL Server Execution Times:
-   CPU time = 7231 ms,  elapsed time = 4863 ms.
-*/
+ORDER BY de.Employee;
+GO
+SET STATISTICS TIME,IO OFF
+GO

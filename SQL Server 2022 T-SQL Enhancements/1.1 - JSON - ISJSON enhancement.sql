@@ -33,7 +33,7 @@ SELECT T.doc AS [test_value]
 	   , ISJSON (T.doc, VALUE) AS is_json_value
 	   , ISJSON (T.doc, OBJECT) AS is_json_object
 	   , ISJSON (T.doc, ARRAY) AS is_json_array
-	   , ISJSON (T.doc, SCALAR) AS is_j2son_scalar
+	   , ISJSON (T.doc, SCALAR) AS is_json_scalar
 FROM (
 	VALUES ('abc')
 		   , ('''abc''')
